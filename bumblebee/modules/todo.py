@@ -19,7 +19,10 @@ class Module(bumblebee.engine.Module):
         super(Module, self).__init__(engine, config,
             bumblebee.output.Widget(full_text=self.output)
         )
-        self._doc = os.path.expanduser(self.parameter("file", "~/Documents/todo.txt"))
+        self._doc = os.path.expanduser(
+            self.parameter("file", "~/Documents/todo.txt")
+        )
+        self._ignore_chrs = self.parameter("ignore", "#").split()
         self._todos = self.count_items()
 
 
@@ -36,10 +39,13 @@ class Module(bumblebee.engine.Module):
 
     def count_items(self):
         try:
-            i = -1
-            with open(self._doc) as f:
-                for i, l in enumerate(f):
-                    pass
-            return i+1
+            num_todos = 0
+            with open(self._doc, 'r') as f:
+                for line in f:
+                    if line.strip():
+                        startswith = line.split()[0]
+                        if startswith not in self._ignore_chrs:
+                            num_todos += 1
+            return num_todos
         except Exception:
             return 0
